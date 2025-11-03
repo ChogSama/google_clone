@@ -19,7 +19,16 @@ int main()
     const char *response =
         "HTTP/1.1 200 OK\r\n"
         "Content-Type: text/html\r\n\r\n"
-        "<html><body><h1>Hello from Google Clone!</h1></body></html>";
+        "<!DOCTYPE html>"
+        "<html lang='en'>"
+        "<head><meta charset='UTF-8'><title>Google Clone</title></head>"
+        "<body>"
+        "<div id='logo'>Google</div>"
+        "<form action='/search' method='GET'>"
+        "<input type='text' name='q' placeholder='Search Google Clone'>"
+        "<input type='submit' value='Search'>"
+        "</form>"
+        "</body></html>";
 
     // Initialize Winsock
     if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)

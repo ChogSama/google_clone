@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>Google Clone</title>
+        <style>
+            body {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                height: 100vh;
+                font-family: Arial, sans-serif;
+            }
+            #logo {
+                font-size: 48px;
+                font-weight: bold;
+                color: #4285F4;
+                margin-bottom: 20px;
+            }
+            input[type="text"] {
+                width: 400px;
+                height: 35px;
+                font-size: 18px;
+                padding: 0 10px;
+            }
+            input[type="submit"] {
+                height: 37px;
+                font-size: 16px;
+                margin-left: 10px;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="logo">Google</div>
+        <form action="/search" method="GET">
+            <input type="text" name="q" placeholder="Search Google Clone">
+            <input type="submit" value="Search">
+        </form>
+    </body>
+</html>
