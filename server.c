@@ -68,7 +68,39 @@ int main()
             continue;
         }
 
-        recv(new_socket, buffer, BUFFER_SIZE, 0);
+        int valread = recv(new_socket, buffer, BUFFER_SIZE, 0);
+        buffer[valread] = '\0';
+
+        char response[BUFFER_SIZE * 4];
+        char query[256] = "";
+
+        // Parse GET request for "/search/q=..."
+        char *q_ptr = strstr(buffer, "GET /search?q=");
+        if (q_ptr)
+        {
+            q_ptr += strlen("GET /search?q=");
+            char *space_ptr = strstr(q_ptr, " ");
+            if (space_ptr)
+            {
+                int len = space_ptr - q_ptr;
+                if (len > 255)
+                    len = 255;
+                strncpy(query, q_ptr, len);
+                query[len] = '\0';
+            }
+        }
+
+        // Build HTML response
+        snprintf(response, sizeof(response),
+                 "HTTP/1.1 200 OK\r\n"
+                 "Content-Type: text/html\r\n\r\n"
+                 "<html><body>"
+                 "<h1>Search Results for: %s</h1>"
+                 "<p>(This is a fake Google Clone)</p>"
+                 "<a href='/'>Back to homepage</a>"
+                 "</body></html>",
+                 query);
+
         send(new_socket, response, (int)strlen(response), 0);
         closesocket(new_socket);
     }
