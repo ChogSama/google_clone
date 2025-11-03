@@ -71,37 +71,62 @@ int main()
         int valread = recv(new_socket, buffer, BUFFER_SIZE, 0);
         buffer[valread] = '\0';
 
-        char response[BUFFER_SIZE * 4];
-        char query[256] = "";
+        char file_buffer[BUFFER_SIZE * 4];
+        FILE *file = NULL;
 
-        // Parse GET request for "/search/q=..."
-        char *q_ptr = strstr(buffer, "GET /search?q=");
-        if (q_ptr)
+        // Determine which file to serve
+        if (strstr(buffer, "GET / ") != NULL || strstr(buffer, "GET /index.html") != NULL)
         {
-            q_ptr += strlen("GET /search?q=");
-            char *space_ptr = strstr(q_ptr, " ");
-            if (space_ptr)
-            {
-                int len = space_ptr - q_ptr;
-                if (len > 255)
-                    len = 255;
-                strncpy(query, q_ptr, len);
-                query[len] = '\0';
-            }
+            file = fopen("index.html", "r");
+        }
+        else if (strstr(buffer, "GET /search?q=") != NULL)
+        {
+            file = fopen("search.html", "r");
         }
 
-        // Build HTML response
-        snprintf(response, sizeof(response),
-                 "HTTP/1.1 200 OK\r\n"
-                 "Content-Type: text/html\r\n\r\n"
-                 "<html><body>"
-                 "<h1>Search Results for: %s</h1>"
-                 "<p>(This is a fake Google Clone)</p>"
-                 "<a href='/'>Back to homepage</a>"
-                 "</body></html>",
-                 query);
+        if (file)
+        {
+            fread(file_buffer, 1, sizeof(file_buffer) - 1, file);
+            fclose(file);
 
-        send(new_socket, response, (int)strlen(response), 0);
+            // If search, replace {{query}} with actual query
+            char *q_ptr = strstr(buffer, "GET /search?q=");
+            if (q_ptr)
+            {
+                q_ptr += strlen("GET /search?q=");
+                char query[256] = "";
+                char *space_ptr = strstr(q_ptr, " ");
+                if (space_ptr)
+                {
+                    int len = space_ptr - q_ptr;
+                    if (len > 255)
+                        len = 255;
+                    strncpy(query, q_ptr, len);
+                    query[len] = '\0';
+
+                    // Replace {{query}} placeholder in file_buffer
+                    char final_response[BUFFER_SIZE * 4];
+                    char *pos = strstr(file_buffer, "{{query}}");
+                    if (pos)
+                    {
+                        int before_len = pos - file_buffer;
+                        snprintf(final_response, sizeof(final_response), "%.*s%s%s", before_len, file_buffer, query, pos + strlen("{{query}}"));
+                        strcpy(file_buffer, final_response);
+                    }
+                }
+            }
+
+            char header[256];
+            snprintf(header, sizeof(header), "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n");
+            send(new_socket, header, (int)strlen(header), 0);
+            send(new_socket, file_buffer, (int)strlen(file_buffer), 0);
+        }
+        else
+        {
+            const char *notfound = "HTTP/1.1 404 Not Found\r\nContent-Type: text/html\r\n\r\n<h1>404 Not Found</h1>";
+            send(new_socket, notfound, (int)strlen(notfound), 0);
+        }
+
         closesocket(new_socket);
     }
 
