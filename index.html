@@ -28,6 +28,7 @@
             form {
                 display: flex;
                 align-items: center;
+                position: relative; /* for suggestion overlay */
             }
 
             /* Search input */
@@ -40,6 +41,23 @@
                 border: 1px solid #dcdcdc;
                 border-radius: 24px;
                 outline: none;
+                position: relative;
+                background: transparent;
+                z-index: 2;
+            }
+
+            /* Suggestion overlay */
+            #suggestion {
+                position: absolute;
+                top: 0;
+                left: 0;
+                height: 35px;
+                line-height: 35px;
+                color: #aaa;
+                padding: 0 12px;
+                pointer-events: none;
+                font-size: 16px;
+                z-index: 1;
             }
 
             /* Submit button */
@@ -69,8 +87,46 @@
     <body>
         <div id="logo">Google</div>
         <form action="/search" method="GET">
-            <input type="text" name="q" placeholder="Search Google Clone">
+            <input type="text" name="q" placeholder="Search Google Clone" autocomplete="off">
+            <div id="suggestion"></div>
             <input type="submit" value="Search">
         </form>
+
+        <!-- JavaScript: interactive features -->
+        <script>
+            const input = document.querySelector('input[name="q"]');
+            const suggestionDiv = document.getElementById('suggestion');
+            const form = document.querySelector('form');
+            const suggestions = ['ChatGPT', 'OpenAI', 'C programming', 'Python', 'Google Clone'];
+
+            // Clear placeholder and overlay immediately on focus
+            input.addEventListener('focus', () => {
+                suggestionDiv.textContent = '';
+            });
+
+            // Prevent empty search submissions
+            form.addEventListener('submit', (e) => {
+                if (input.value.trim() === '') {
+                    e.preventDefault();
+                    alert('Please enter a search query.');
+                }
+            });
+
+            // Show only the remaining suggestion (case-corrected)
+            input.addEventListener('input', () => {
+                const val = input.value;
+                if (!val) {
+                    suggestionDiv.textContent = '';
+                    return;
+                }
+                const match = suggestions.find(s => s.toLowerCase().startsWith(val.toLowerCase()));
+                if (match) {
+                    // Display only the part of the suggestion the user hasn't typed
+                    suggestionDiv.textContent = match.substring(val.length);
+                } else {
+                    suggestionDiv.textContent = '';
+                }
+            });
+        </script>
     </body>
 </html>
