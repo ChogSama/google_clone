@@ -3,10 +3,35 @@
     <head>
         <meta charset="UTF-8">
         <title>Google Clone - Search Results</title>
+        <style>
+            body { font-family: Arial, sans-serif; padding: 20px; }
+            .result { margin-bottom: 15px; }
+            .title { font-size: 18px; color: #1a0dab; }
+            .url { font-size: 14px; color: green; }
+            .snippet { font-size: 14px; color: #545454; }
+        </style>
     </head>
     <body>
-        <h1>Search Results for: {{query}}</h1>
-        <p>(This is a fake Google Clone)</p>
+        <h2>Search Results for: {{query}}</h2>
+
+        <div class="result">
+            <div class="title">Result 1 for {{query}}</div>
+            <div class="url">https://www.example.com</div>
+            <div class="snippet">This is a fake snippet describing result 1 for your query.</div>
+        </div>
+
+        <div class="result">
+            <div class="title">Result 2 for {{query}}</div>
+            <div class="url">https://www.example2.com</div>
+            <div class="snippet">This is a fake snippet describing result 2 for your query.</div>
+        </div>
+
+        <div class="result">
+            <div class="title">Result 3 for {{query}}</div>
+            <div class="url">https://www.example3.com</div>
+            <div class="snippet">This is a fake snippet describing result 3 for your query.</div>
+        </div>
+
         <a href="/">Back to homepage</a>
     </body>
 </html>

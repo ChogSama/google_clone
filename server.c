@@ -71,7 +71,7 @@ int main()
         int valread = recv(new_socket, buffer, BUFFER_SIZE, 0);
         buffer[valread] = '\0';
 
-        char file_buffer[BUFFER_SIZE * 4];
+        char file_buffer[BUFFER_SIZE * 4] = {0};
         FILE *file = NULL;
 
         // Determine which file to serve
@@ -86,7 +86,8 @@ int main()
 
         if (file)
         {
-            fread(file_buffer, 1, sizeof(file_buffer) - 1, file);
+            size_t n = fread(file_buffer, 1, sizeof(file_buffer) - 1, file);
+            file_buffer[n] = '\0';
             fclose(file);
 
             // If search, replace {{query}} with actual query
@@ -105,7 +106,7 @@ int main()
                     query[len] = '\0';
 
                     // Replace {{query}} placeholder in file_buffer
-                    char final_response[BUFFER_SIZE * 4];
+                    char final_response[BUFFER_SIZE * 4] = {0};
                     char *pos = strstr(file_buffer, "{{query}}");
                     if (pos)
                     {
