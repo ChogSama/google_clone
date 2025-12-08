@@ -105,6 +105,21 @@ int main()
                     strncpy(query, q_ptr, len);
                     query[len] = '\0';
 
+                    // Generate multiple fake search results dynamically
+                    char results[BUFFER_SIZE * 2] = ""; // buffer for generated results
+                    for (int i = 1; i <= 5; i++)        // generate 5 fake results
+                    {
+                        char temp[512];
+                        snprintf(temp, sizeof(temp),
+                                 "<div class='result'>"
+                                 "<div class='title'>Result %d for %s</div>"
+                                 "<div class='url'>https://www.example%d.com</div>"
+                                 "<div class='snippet'>This is a fake snippet describing result %d for your query.</div>"
+                                 "</div>",
+                                 i, query, i, i);
+                        strcat(results, temp);
+                    }
+
                     // Replace {{query}} placeholder in file_buffer
                     char final_response[BUFFER_SIZE * 4] = {0};
                     char *pos = strstr(file_buffer, "{{query}}");
@@ -113,6 +128,16 @@ int main()
                         int before_len = pos - file_buffer;
                         snprintf(final_response, sizeof(final_response), "%.*s%s%s", before_len, file_buffer, query, pos + strlen("{{query}}"));
                         strcpy(file_buffer, final_response);
+                    }
+
+                    // Replace {{results}} placeholder with dynamically generated results
+                    pos = strstr(file_buffer, "{{results}}");
+                    if (pos)
+                    {
+                        int before_len = pos - file_buffer;
+                        char temp_response[BUFFER_SIZE * 4] = {0};
+                        snprintf(temp_response, sizeof(temp_response), "%.*s%s%s", before_len, file_buffer, results, pos + strlen("{{results}}"));
+                        strcpy(file_buffer, temp_response);
                     }
                 }
             }
