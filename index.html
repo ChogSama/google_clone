@@ -46,6 +46,11 @@
                 z-index: 2;
             }
 
+            /* Hide placeholder on focus */
+            input[type="text"]:focus::placeholder {
+                opacity: 0;
+            }
+
             /* Suggestion overlay */
             #suggestion {
                 position: absolute;
@@ -99,9 +104,19 @@
             const form = document.querySelector('form');
             const suggestions = ['ChatGPT', 'OpenAI', 'C programming', 'Python', 'Google Clone'];
 
+            const originalPlaceholder = input.placeholder;
+
             // Clear placeholder and overlay immediately on focus
             input.addEventListener('focus', () => {
+                input.placeholder = '';
                 suggestionDiv.textContent = '';
+            });
+
+            // Restore placeholder if input is empty
+            input.addEventListener('blur', () => {
+                if (!input.value) {
+                    input.placeholder = originalPlaceholder;
+                }
             });
 
             // Prevent empty search submissions
@@ -119,13 +134,10 @@
                     suggestionDiv.textContent = '';
                     return;
                 }
+
                 const match = suggestions.find(s => s.toLowerCase().startsWith(val.toLowerCase()));
-                if (match) {
-                    // Display only the part of the suggestion the user hasn't typed
-                    suggestionDiv.textContent = match.substring(val.length);
-                } else {
-                    suggestionDiv.textContent = '';
-                }
+
+                suggestionDiv.textContent = match ? match.substring(val.length) : '';
             });
         </script>
     </body>
