@@ -10,28 +10,65 @@
 #define BUFFER_SIZE 1024
 
 // Decode URL-encoded strings (e.g. %20 -> space)
-void url_decode(char *dst, const char *src) {
+void url_decode(char *dst, const char *src)
+{
     char a, b;
-    while (*src) {
-        if ((*src == '%') && ((a = src[1]) && (b = src[2])) && (isxdigit(a) && isxdigit(b))) {
-            if (a >= 'a') a -= 'a' - 'A';
-            if (a >= 'A') a -= ('A' - 10);
-            else a -= '0';
+    while (*src)
+    {
+        if ((*src == '%') && ((a = src[1]) && (b = src[2])) && (isxdigit(a) && isxdigit(b)))
+        {
+            if (a >= 'a')
+                a -= 'a' - 'A';
+            if (a >= 'A')
+                a -= ('A' - 10);
+            else
+                a -= '0';
 
-            if (b >= 'a') b -= 'a' - 'A';
-            if (b >= 'A') b -= ('A' - 10);
-            else b -= '0';
+            if (b >= 'a')
+                b -= 'a' - 'A';
+            if (b >= 'A')
+                b -= ('A' - 10);
+            else
+                b -= '0';
 
             *dst++ = 16 * a + b;
             src += 3;
-        } else if (*src == '+') {
+        }
+        else if (*src == '+')
+        {
             *dst++ = ' ';
             src++;
-        } else {
+        }
+        else
+        {
             *dst++ = *src++;
         }
     }
     *dst = '\0';
+}
+
+void highlight(char *dst, const char *src, const char *word)
+{
+    const char *p = src;
+    size_t wlen = strlen(word);
+
+    while (*p)
+    {
+        if (strncasecmp(p, word, wlen) == 0)
+        {
+            strcat(dst, "<mark>");
+            strncat(dst, p, wlen);
+            strcat(dst, "<mark>");
+            p += wlen;
+        }
+        else
+        {
+            size_t len = strlen(dst);
+            dst[len] = *p;
+            dst[len + 1] = '\0';
+            p++;
+        }
+    }
 }
 
 int main()
@@ -132,21 +169,45 @@ int main()
                     strncpy(raw_query, q_ptr, len);
                     raw_query[len] = '\0';
 
-                    //Decode URL-encoded query
+                    // Decode URL-encoded query
                     url_decode(query, raw_query);
+
+                    // Split query into words
+                    char query_copy[256];
+                    strcpy(query_copy, query);
+
+                    char *words[10];
+                    int word_count = 0;
+
+                    char *token = strtok(query_copy, " ");
+                    while (token && word_count < 10)
+                    {
+                        words[word_count++] = token;
+                        token = strtok(NULL, " ");
+                    }
 
                     // Generate multiple fake search results dynamically
                     char results[BUFFER_SIZE * 2] = ""; // buffer for generated results
                     for (int i = 1; i <= 5; i++)        // generate 5 fake results
                     {
+                        char highlighted[512];
+                        strcpy(highlighted, query);
+
+                        for (int w = 0; w < word_count; w++)
+                        {
+                            char temp2[512] = "";
+                            highlight(temp2, highlighted, words[w]); // apply on previous result
+                            strcpy(highlighted, temp2);
+                        }
+
                         char temp[512];
                         snprintf(temp, sizeof(temp),
                                  "<div class='result'>"
                                  "<div class='title'>Result %d for %s</div>"
                                  "<div class='url'>https://www.example%d.com</div>"
-                                 "<div class='snippet'>This is a fake snippet describing result %d for your query.</div>"
+                                 "<div class='snippet'>This is a fake snippet describing result %d for %s.</div>"
                                  "</div>",
-                                 i, query, i, i);
+                                 i, highlighted, i, i, highlighted);
                         strcat(results, temp);
                     }
 
