@@ -9,6 +9,13 @@
 #define PORT 8080
 #define BUFFER_SIZE 1024
 
+// Result struct
+typedef struct
+{
+    int score;
+    char html[512];
+} SearchResult;
+
 // Decode URL-encoded strings (e.g. %20 -> space)
 void url_decode(char *dst, const char *src)
 {
@@ -69,6 +76,43 @@ void highlight(char *dst, const char *src, const char *word)
             p++;
         }
     }
+}
+
+char *strcasestr_local(const char *haystack, const char *needle)
+{
+    if (!*needle)
+        return (char *)haystack;
+
+    for (; *haystack; haystack++)
+    {
+        const char *h = haystack;
+        const char *n = needle;
+
+        while (*h && *n &&
+               tolower((unsigned char)*h) == tolower((unsigned char)*n))
+        {
+            h++;
+            n++;
+        }
+
+        if (!*n)
+            return (char *)haystack;
+    }
+    return NULL;
+}
+
+// Simple word match counter
+int count_matches(const char *text, char *words[], int word_count)
+{
+    int score = 0;
+    for (int i = 0; i < word_count; i++)
+    {
+        if (strcasestr_local(text, words[i]))
+        {
+            score++;
+        }
+    }
+    return score;
 }
 
 int main()
@@ -187,28 +231,57 @@ int main()
                     }
 
                     // Generate multiple fake search results dynamically
-                    char results[BUFFER_SIZE * 2] = ""; // buffer for generated results
-                    for (int i = 1; i <= 5; i++)        // generate 5 fake results
+                    SearchResult ranked[5];
+
+                    for (int i = 0; i < 5; i++)
                     {
+                        char base_text[256];
+                        snprintf(base_text, sizeof(base_text),
+                                 "Result %d fake snippet describing result %d for %s",
+                                 i + 1, i + 1, query);
+
+                        int score = count_matches(base_text, words, word_count);
+
                         char highlighted[512];
                         strcpy(highlighted, query);
 
                         for (int w = 0; w < word_count; w++)
                         {
                             char temp2[512] = "";
-                            highlight(temp2, highlighted, words[w]); // apply on previous result
+                            highlight(temp2, highlighted, words[w]);
                             strcpy(highlighted, temp2);
                         }
 
-                        char temp[512];
-                        snprintf(temp, sizeof(temp),
+                        snprintf(ranked[i].html, sizeof(ranked[i].html),
                                  "<div class='result'>"
-                                 "<div class='title'>Result %d for %s</div>"
+                                 "<div class='title'>Result %d (score: %d)</div>"
                                  "<div class='url'>https://www.example%d.com</div>"
-                                 "<div class='snippet'>This is a fake snippet describing result %d for %s.</div>"
+                                 "<div class='snippet'>%s</div>"
                                  "</div>",
-                                 i, highlighted, i, i, highlighted);
-                        strcat(results, temp);
+                                 i + 1, score, i + 1, highlighted);
+
+                        ranked[i].score = score;
+                    }
+
+                    // Sort results
+                    for (int i = 0; i < 5; i++)
+                    {
+                        for (int j = i + 1; j < 5; j++)
+                        {
+                            if (ranked[j].score > ranked[i].score)
+                            {
+                                SearchResult tmp = ranked[i];
+                                ranked[i] = ranked[j];
+                                ranked[j] = tmp;
+                            }
+                        }
+                    }
+
+                    // Build final results HTML
+                    char results[BUFFER_SIZE * 2] = "";
+                    for (int i = 0; i < 5; i++)
+                    {
+                        strcat(results, ranked[i].html);
                     }
 
                     // Replace {{query}} placeholder in file_buffer
