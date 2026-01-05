@@ -58,7 +58,7 @@ void highlight(char *dst, const char *src, const char *word)
         {
             strcat(dst, "<mark>");
             strncat(dst, p, wlen);
-            strcat(dst, "<mark>");
+            strcat(dst, "</mark>");
             p += wlen;
         }
         else
