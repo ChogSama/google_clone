@@ -1,12 +1,38 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 #include <winsock2.h>
 
 #pragma comment(lib, "ws2_32.lib")
 
 #define PORT 8080
 #define BUFFER_SIZE 1024
+
+// Decode URL-encoded strings (e.g. %20 -> space)
+void url_decode(char *dst, const char *src) {
+    char a, b;
+    while (*src) {
+        if ((*src == '%') && ((a = src[1]) && (b = src[2])) && (isxdigit(a) && isxdigit(b))) {
+            if (a >= 'a') a -= 'a' - 'A';
+            if (a >= 'A') a -= ('A' - 10);
+            else a -= '0';
+
+            if (b >= 'a') b -= 'a' - 'A';
+            if (b >= 'A') b -= ('A' - 10);
+            else b -= '0';
+
+            *dst++ = 16 * a + b;
+            src += 3;
+        } else if (*src == '+') {
+            *dst++ = ' ';
+            src++;
+        } else {
+            *dst++ = *src++;
+        }
+    }
+    *dst = '\0';
+}
 
 int main()
 {
@@ -95,6 +121,7 @@ int main()
             if (q_ptr)
             {
                 q_ptr += strlen("GET /search?q=");
+                char raw_query[256] = "";
                 char query[256] = "";
                 char *space_ptr = strstr(q_ptr, " ");
                 if (space_ptr)
@@ -102,8 +129,11 @@ int main()
                     int len = space_ptr - q_ptr;
                     if (len > 255)
                         len = 255;
-                    strncpy(query, q_ptr, len);
-                    query[len] = '\0';
+                    strncpy(raw_query, q_ptr, len);
+                    raw_query[len] = '\0';
+
+                    //Decode URL-encoded query
+                    url_decode(query, raw_query);
 
                     // Generate multiple fake search results dynamically
                     char results[BUFFER_SIZE * 2] = ""; // buffer for generated results
