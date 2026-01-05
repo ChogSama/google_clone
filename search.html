@@ -4,16 +4,65 @@
         <meta charset="UTF-8">
         <title>Google Clone - Search Results</title>
         <style>
-            body { font-family: Arial, sans-serif; padding: 20px; }
-            .result { margin-bottom: 15px; }
-            .title { font-size: 18px; color: #1a0dab; }
-            .url { font-size: 14px; color: green; }
-            .snippet { font-size: 14px; color: #545454; }
+            body { 
+                font-family: Arial, sans-serif;
+                margin: 0;
+                padding: 20px 40px;
+            }
+
+            /* Top search bar */
+            .top-bar {
+                display: flex;
+                align-items: center;
+                margin-bottom: 30px;
+            }
+
+            .logo {
+                font-size: 28px;
+                font-weight: bold;
+                color: #4285F4;
+                margin-right: 20px;
+            }
+
+            .search-box input[type="text"] {
+                width: 400px;
+                padding: 8px 12px;
+                font-size: 16px;
+                border-radius: 24px;
+                border: 1px solid #dcdcdc;
+                outline: none;
+            }
+
+            .result {
+                margin-bottom: 20px;
+            }
+
+            .title {
+                font-size: 18px;
+                color: #1a0dab;
+            }
+
+            .url {
+                font-size: 14px;
+                color: green;
+            }
+
+            .snippet {
+                font-size: 14px;
+                color: #545454;
+            }
         </style>
     </head>
     <body>
-        <h2>Search Results for: {{query}}</h2>
-        {{results}}
-        <a href="/">Back to homepage</a>
+        <!-- Top search bar -->
+        <div class="top-bar">
+            <div class="logo">Google</div>
+            <form class="search-box" action="/search" method="GET">
+                <input type="text" name="q" value="{{query}}">
+            </form>
+        </div>
+
+        <!-- Results -->
+         {{results}}
     </body>
 </html>
